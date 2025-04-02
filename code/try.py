@@ -63,72 +63,74 @@ def convert_polbooks_to_pyg_data(gml_file_path):
 def convert_acm_to_pyg_data(mat_file_path):
     # 读取 .mat 文件
     mat_data = sio.loadmat(mat_file_path)
-    
     # 提取数据
     W = mat_data['W']  # 邻接矩阵
     fea = mat_data['fea']  # 节点特征
     gnd = mat_data['gnd']  # 节点标签
-    
     # 提取边索引
     row, col = W.nonzero()  # 获取非零元素的行和列索引
     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
-    
     # 节点特征和标签
     x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
     y = torch.tensor(gnd[0], dtype=torch.long)  # 节点标签
-    
     # 创建 Data 对象
     data = Data(x=x, edge_index=edge_index, y=y)
-    
     return data
 
 
-def convert_wiki_to_pyg_data(mat_file_path):
+# def convert_wiki_to_pyg_data(mat_file_path):
+#     # 读取 .mat 文件
+#     mat_data = sio.loadmat(mat_file_path)
+#
+#     # 提取数据
+#     W = mat_data['W']  # 邻接矩阵
+#     fea = mat_data['fea']  # 节点特征
+#     gnd = mat_data['gnd']  # 节点标签
+#
+#     # 提取边索引
+#     row, col = W.nonzero()  # 获取非零元素的行和列索引
+#     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
+#
+#     # 节点特征和标签
+#     x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
+#     y = torch.tensor(gnd, dtype=torch.long)  # 节点标签
+#
+#     # 创建 Data 对象
+#     data = Data(x=x, edge_index=edge_index, y=y)
+#
+#     return data
+
+
+def convert_pubmed_to_pyg_data(mat_file_path):
     # 读取 .mat 文件
     mat_data = sio.loadmat(mat_file_path)
-    
     # 提取数据
     W = mat_data['W']  # 邻接矩阵
     fea = mat_data['fea']  # 节点特征
     gnd = mat_data['gnd']  # 节点标签
-    
     # 提取边索引
     row, col = W.nonzero()  # 获取非零元素的行和列索引
     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
-    
     # 节点特征和标签
-    x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
-    y = torch.tensor(gnd, dtype=torch.long)  # 节点标签
-    
+    x = torch.tensor(fea, dtype=torch.float)  # 节点特征
+    y = torch.tensor(gnd[0], dtype=torch.long)  # 节点标签
     # 创建 Data 对象
     data = Data(x=x, edge_index=edge_index, y=y)
-    
     return data
 
 
 def main():
     # # Polblogs数据集
-    # dataset = PolBlogs(root='./data/Polblogs')
-    # data = dataset[0]
-    # GCNFCM(data, 200)
-    # print("=============================================")
+    dataset = PolBlogs(root='./data/Polblogs')
+    data = dataset[0]
+    GCNFCM(data, 200)
+    print("=============================================")
     # # 加载 Karate Club 数据集
     # dataset = KarateClub()
     # data = dataset[0]  # 数据集中只有一个图
     # GCNFCM(data, 1000)
     # print("==============================================")
     #
-    # # 加载 Football 数据集  正在尝试
-    # # gml_file_path = r'D:\pythonProject\bishe\data\Football\football.gml'
-    # # # 使用自定义函数读取 GML 文件
-    # # G = read_gml_with_multiedges(gml_file_path)
-    # # # 转换为 PyTorch Geometric 的 Data 对象
-    # # data = convert_multigraph_to_pyg_data(G)
-    # # # 打印调试信息，检查 edge_index 是否正确
-    # # print("Edge Index Shape:", data.edge_index.shape)
-    # # print("Number of Nodes:", data.num_nodes)
-    # # print("Number of Edges:", data.num_edges)
-    # # GCNFCM(data, 1000)
     #
     # # 加载 Polbooks 数据集
     # gml_file_path = r'D:\pythonProject\bishe\data\Polbooks\polbooks.gml'
@@ -142,15 +144,25 @@ def main():
     # print("===========================================================")
     
     # acm数据集
-    mat_file_path = r"D:\pythonProject\bishe\data\Acm\acm.mat"
-    data = convert_acm_to_pyg_data(mat_file_path)
-    GCNFCM(data, 500)
-    print("================================================")
-    # wiki
-    mat_file_path = r"D:\pythonProject\bishe\data\Wiki\wiki.mat"
-    data = convert_acm_to_pyg_data(mat_file_path)
-    GCNFCM(data, 500)
-
+    # mat_file_path = r"D:\pythonProject\bishe\data\Acm\acm.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # GCNFCM(data, 500)
+    # print("================================================")
+    # # dblp数据集
+    # mat_file_path = r"D:\pythonProject\bishe\data\dblp\dblp.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # GCNFCM(data, 500)
+    # print("================================================")
+    # pubmed数据集
+    # mat_file_path = r"D:\pythonProject\bishe\data\pubmed\pubmed.mat"
+    # data = convert_pubmed_to_pyg_data(mat_file_path)
+    # GCNFCM(data, 100)
+    # print("================================================")
+    # computers数据集
+    # mat_file_path = r"D:\pythonProject\bishe\data\computers\computers.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # GCNFCM(data, 100)
+    # print("================================================")
 
 if __name__ == "__main__":
     main()
