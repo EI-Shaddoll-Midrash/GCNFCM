@@ -21,34 +21,35 @@ def pre_process(A):
 
 
 # GCN编码器 此为小模型使用
-# class GCNEncoder(nn.Module):
-#     def __init__(self, input_dim, hidden_dim, output_dim):
-#         super(GCNEncoder, self).__init__()
-#         self.conv1 = nn.Linear(input_dim, hidden_dim)
-#         self.conv2 = nn.Linear(hidden_dim, output_dim)
-#
-#     def forward(self, x, A_norm):
-#         # 第一层卷积操作，使用ReLU激活函数
-#         h = F.relu(self.conv1(A_norm @ x))
-#         # 第二层卷积操作，使用线性激活函数（即不使用激活函数）
-#         z = self.conv2(h)
-#         return z
-    
-# GCN编码器 此为中模型使用
 class GCNEncoder(nn.Module):
-    def __init__(self, input_dim, hidden_dim1,hidden_dim2 ,output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(GCNEncoder, self).__init__()
-        self.conv1 = nn.Linear(input_dim, hidden_dim1)
-        self.conv2 = nn.Linear(hidden_dim1, hidden_dim2)
-        self.conv3 = nn.Linear(hidden_dim2, output_dim)
+        self.conv1 = nn.Linear(input_dim, hidden_dim)
+        self.conv2 = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, x, A_norm):
         # 第一层卷积操作，使用ReLU激活函数
         h = F.relu(self.conv1(A_norm @ x))
         # 第二层卷积操作，使用线性激活函数（即不使用激活函数）
-        h2 = self.conv2(h)
-        z = self.conv3(h2)
+        z = self.conv2(h)
         return z
+
+# GCN编码器 此为中模型使用
+# class GCNEncoder(nn.Module):
+#     def __init__(self, input_dim, hidden_dim1, hidden_dim2, output_dim):
+#         super(GCNEncoder, self).__init__()
+#         self.conv1 = nn.Linear(input_dim, hidden_dim1)
+#         self.conv2 = nn.Linear(hidden_dim1, hidden_dim2)
+#         self.conv3 = nn.Linear(hidden_dim2, output_dim)
+#
+#     def forward(self, x, A_norm):
+#         # 第一层卷积操作，使用ReLU激活函数
+#         h = F.relu(self.conv1(A_norm @ x))
+#         # 第二层卷积操作，使用线性激活函数（即不使用激活函数）
+#         h2 = self.conv2(h)
+#         z = self.conv3(h2)
+#         return z
+
 
 # IPD解码器
 class IPDDecoder(nn.Module):
@@ -65,45 +66,48 @@ class IPDDecoder(nn.Module):
 
 
 # GCD解码器 此为小模型使用
-# class GCDDecoder(nn.Module):
-#     def __init__(self, input_dim, hidden_dim, output_dim):
-#         super(GCDDecoder, self).__init__()
-#         self.gc1 = nn.Linear(input_dim, hidden_dim)
-#         self.gc2 = nn.Linear(hidden_dim, output_dim)
-#
-#     def forward(self, z, A_norm):
-#         # 应用图卷积操作
-#         h = F.relu(self.gc1(A_norm @ z))
-#         X_hat = self.gc2(h)
-#         return X_hat
-
-
-# GCD解码器 此为中模型使用
 class GCDDecoder(nn.Module):
-    def __init__(self, input_dim, hidden_dim1,hidden_dim2, output_dim):
+    def __init__(self, input_dim, hidden_dim, output_dim):
         super(GCDDecoder, self).__init__()
-        self.gc1 = nn.Linear(input_dim, hidden_dim1)
-        self.gc2 = nn.Linear(hidden_dim1, hidden_dim2)
-        self.gc3 = nn.Linear(hidden_dim2, output_dim)
+        self.gc1 = nn.Linear(input_dim, hidden_dim)
+        self.gc2 = nn.Linear(hidden_dim, output_dim)
 
     def forward(self, z, A_norm):
         # 应用图卷积操作
         h = F.relu(self.gc1(A_norm @ z))
-        h2 = self.gc2(h)
-        X_hat = self.gc3(h2)
+        X_hat = self.gc2(h)
         return X_hat
-    
+
+
+# GCD解码器 此为中模型使用
+# class GCDDecoder(nn.Module):
+#     def __init__(self, input_dim, hidden_dim1, hidden_dim2, output_dim):
+#         super(GCDDecoder, self).__init__()
+#         self.gc1 = nn.Linear(input_dim, hidden_dim1)
+#         self.gc2 = nn.Linear(hidden_dim1, hidden_dim2)
+#         self.gc3 = nn.Linear(hidden_dim2, output_dim)
+#
+#     def forward(self, z, A_norm):
+#         # 应用图卷积操作
+#         h = F.relu(self.gc1(A_norm @ z))
+#         h2 = self.gc2(h)
+#         X_hat = self.gc3(h2)
+#         return X_hat
+
+
 # 损失函数
 def L1_loss(A, A_hat):
-    criterion = nn.MSELoss()
-    loss = criterion(A_hat, A)
-    
+    # criterion = nn.BCELoss()
+    # loss = criterion(A_hat, A)
+    loss = F.binary_cross_entropy(A_hat, A)
     return loss
 
 
 def L2_loss(X, X_hat):
     criterion = nn.MSELoss()
     loss = criterion(X_hat, X)
+    # loss = F.mse_loss(X, X_hat,reduction='none')
+    # loss = 0.5 * torch.sum(loss)
     return loss
 
 

@@ -1,13 +1,22 @@
 import numpy as np
+from sklearn.cluster import KMeans
+from sklearn.neighbors import NearestNeighbors
+from sklearn.preprocessing import normalize
 
+
+# def initialize_community_centers(Z, c):
+#     # 固定随机种子
+#     np.random.seed(42)
+#     # 随机初始化社区中心
+#     n, d = Z.shape
+#     indices = np.random.choice(n, c, replace=False)
+#     return Z[indices]
 
 def initialize_community_centers(Z, c):
-    # 固定随机种子
-    np.random.seed(42)
-    # 随机初始化社区中心
-    n, d = Z.shape
-    indices = np.random.choice(n, c, replace=False)
-    return Z[indices]
+    # 使用K-Means++初始化聚类中心
+    kmeans = KMeans(n_clusters=c, init='k-means++', n_init=10)
+    kmeans.fit(Z)
+    return kmeans.cluster_centers_
 
 
 # def update_soft_assignment(Z, C, m):
@@ -35,7 +44,7 @@ def update_soft_assignment(Z, C, m):
     
     # 计算所有数据点到所有聚类中心的距离
     distances = np.linalg.norm(Z[:, np.newaxis, :] - C, axis=2)
-    distances = np.where(distances == 0, 1e10, distances)
+    distances = np.where(distances == 0, 1e-10, distances)
     # 计算软分配矩阵 U
     U = np.zeros((n, c))
     for i in range(n):
@@ -84,7 +93,7 @@ def calculate_modularity(U, A, WE, lamb, c):
     return Q
 
 
-def fcmq(Z, A, WE, epsilon, max_c, m, lamb):
+def fcmq(Z, A, WE, lamb, epsilon, max_c, m):
     n, _ = Z.shape
     best_U = None
     prev_Q = -np.inf
@@ -102,7 +111,7 @@ def fcmq(Z, A, WE, epsilon, max_c, m, lamb):
             C = update_community_centers(Z, U, m)
             if np.linalg.norm(U - U_prev) < epsilon:
                 break
-        
+        best_U = U
         Q = calculate_modularity(U, A, WE, lamb, c)  # 假设已实现模块度计算
         if Q > prev_Q:
             best_U = U
@@ -112,4 +121,3 @@ def fcmq(Z, A, WE, epsilon, max_c, m, lamb):
         # print(c)
     best_Q = Q
     return best_U, best_Q
-

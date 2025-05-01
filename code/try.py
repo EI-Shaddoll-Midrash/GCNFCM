@@ -1,3 +1,5 @@
+import time
+
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -63,51 +65,85 @@ def convert_polbooks_to_pyg_data(gml_file_path):
 def convert_acm_to_pyg_data(mat_file_path):
     # 读取 .mat 文件
     mat_data = sio.loadmat(mat_file_path)
-    
     # 提取数据
     W = mat_data['W']  # 邻接矩阵
     fea = mat_data['fea']  # 节点特征
     gnd = mat_data['gnd']  # 节点标签
-    
     # 提取边索引
     row, col = W.nonzero()  # 获取非零元素的行和列索引
     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
-    
     # 节点特征和标签
     x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
     y = torch.tensor(gnd[0], dtype=torch.long)  # 节点标签
-    
     # 创建 Data 对象
     data = Data(x=x, edge_index=edge_index, y=y)
-    
     return data
 
 
-def convert_wiki_to_pyg_data(mat_file_path):
+# def convert_wiki_to_pyg_data(mat_file_path):
+#     # 读取 .mat 文件
+#     mat_data = sio.loadmat(mat_file_path)
+#
+#     # 提取数据
+#     W = mat_data['W']  # 邻接矩阵
+#     fea = mat_data['fea']  # 节点特征
+#     gnd = mat_data['gnd']  # 节点标签
+#
+#     # 提取边索引
+#     row, col = W.nonzero()  # 获取非零元素的行和列索引
+#     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
+#
+#     # 节点特征和标签
+#     x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
+#     y = torch.tensor(gnd, dtype=torch.long)  # 节点标签
+#
+#     # 创建 Data 对象
+#     data = Data(x=x, edge_index=edge_index, y=y)
+#
+#     return data
+
+
+# def convert_pubmed_to_pyg_data(mat_file_path):
+#     # 读取 .mat 文件
+#     mat_data = sio.loadmat(mat_file_path)
+#     # 提取数据
+#     W = mat_data['W']  # 邻接矩阵
+#     fea = mat_data['fea']  # 节点特征
+#     gnd = mat_data['gnd']  # 节点标签
+#     # 提取边索引
+#     row, col = W.nonzero()  # 获取非零元素的行和列索引
+#     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
+#     # 节点特征和标签
+#     x = torch.tensor(fea, dtype=torch.float)  # 节点特征
+#     y = torch.tensor(gnd[0], dtype=torch.long)  # 节点标签
+#     # 创建 Data 对象
+#     data = Data(x=x, edge_index=edge_index, y=y)
+#     return data
+
+
+def convert_pubmed_to_pyg_data(mat_file_path):
     # 读取 .mat 文件
     mat_data = sio.loadmat(mat_file_path)
-    
     # 提取数据
     W = mat_data['W']  # 邻接矩阵
     fea = mat_data['fea']  # 节点特征
     gnd = mat_data['gnd']  # 节点标签
-    
+    # 确保 gnd 是一维数组
+    if len(gnd.shape) > 1:
+        gnd = gnd.flatten()
     # 提取边索引
     row, col = W.nonzero()  # 获取非零元素的行和列索引
     edge_index = torch.tensor([row, col], dtype=torch.long)  # 转换为形状为 [2, num_edges] 的张量
-    
     # 节点特征和标签
-    x = torch.tensor(fea.todense(), dtype=torch.float)  # 节点特征
+    x = torch.tensor(fea, dtype=torch.float)  # 节点特征
     y = torch.tensor(gnd, dtype=torch.long)  # 节点标签
-    
     # 创建 Data 对象
     data = Data(x=x, edge_index=edge_index, y=y)
-    
     return data
 
 
 def main():
-    # # Polblogs数据集
+    # Polblogs数据集
     # dataset = PolBlogs(root='./data/Polblogs')
     # data = dataset[0]
     # GCNFCM(data, 200)
@@ -118,17 +154,6 @@ def main():
     # GCNFCM(data, 1000)
     # print("==============================================")
     #
-    # # 加载 Football 数据集  正在尝试
-    # # gml_file_path = r'D:\pythonProject\bishe\data\Football\football.gml'
-    # # # 使用自定义函数读取 GML 文件
-    # # G = read_gml_with_multiedges(gml_file_path)
-    # # # 转换为 PyTorch Geometric 的 Data 对象
-    # # data = convert_multigraph_to_pyg_data(G)
-    # # # 打印调试信息，检查 edge_index 是否正确
-    # # print("Edge Index Shape:", data.edge_index.shape)
-    # # print("Number of Nodes:", data.num_nodes)
-    # # print("Number of Edges:", data.num_edges)
-    # # GCNFCM(data, 1000)
     #
     # # 加载 Polbooks 数据集
     # gml_file_path = r'D:\pythonProject\bishe\data\Polbooks\polbooks.gml'
@@ -141,15 +166,50 @@ def main():
     # GCNFCM(data, 1000)
     # print("===========================================================")
     
-    # acm数据集
-    mat_file_path = r"D:\pythonProject\bishe\data\Acm\acm.mat"
-    data = convert_acm_to_pyg_data(mat_file_path)
-    GCNFCM(data, 500)
+    # # acm数据集
+    # t1 = time.time()
+    # mat_file_path = r"D:\pythonProject\bishe\data\Acm\acm.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # lamb_params = [0.01, 0.001, 0.0001, 0.00001, 0.000001]  #
+    # epsilon_params = [0.000001, 0.0000001, 0.00000001, 0.000000001, 0.0000000001]
+    # lambda_params = [0.1, 0.01, 0.001, 0.0001, 0.00001]
+    # thereshold_params = [0.2, 0.1, 0.05, 0.03, 0.02, 0.01]
+    # for lamb in lamb_params:
+    #     for epsilon in epsilon_params:
+    #         for lambda_param in lambda_params:
+    #             for thereshold in thereshold_params:
+    #                 GCNFCM(data, 500, lambda_param, lamb, epsilon, thereshold)
+    #                 print(f"lambda_param:{lambda_param},lamb:{lamb},epsilon:{epsilon},threshold:{thereshold}")
+    #                 print("================================================")
+    #
+    # t2 = time.time()
+    # print(f"共用时:{t2 - t1}")
+    # GCNFCM(data, 500, 0.1, 0.001, 0.0000001)
+    # dblp数据集
+    # mat_file_path = r"D:\pythonProject\bishe\data\dblp\dblp.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # GCNFCM(data, 1000)
+    # print("================================================")
+    # computers数据集
+    # mat_file_path = r"D:\pythonProject\bishe\data\computers\computers.mat"
+    # data = convert_acm_to_pyg_data(mat_file_path)
+    # lamb_params = [0.001, 0.0001, 0.00001, 0.000001]
+    # epsilon_params = [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001]
+    # num_params = [100, 200]
+    # for lamb in lamb_params:
+    #     for epsilon in epsilon_params:
+    #         for num in num_params:
+    #             GCNFCM(data, num, lamb, epsilon)
+    #             print(f"num:{num},lamb:{lamb},epsilon:{epsilon}")
+    #             print("================================================")
+    # pubmed数据集
+    t1 = time.time()
+    mat_file_path = r"D:\pythonProject\bishe\data\pubmed\pubmed.mat"
+    data = convert_pubmed_to_pyg_data(mat_file_path)
+    GCNFCM(data, 100, 0.01, 0.001, 0.00001, 0.1)
     print("================================================")
-    # wiki
-    mat_file_path = r"D:\pythonProject\bishe\data\Wiki\wiki.mat"
-    data = convert_acm_to_pyg_data(mat_file_path)
-    GCNFCM(data, 500)
+    t2 = time.time()
+    print(f"共用时:{t2 - t1}")
 
 
 if __name__ == "__main__":
